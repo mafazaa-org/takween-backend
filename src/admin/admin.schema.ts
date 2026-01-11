@@ -9,7 +9,13 @@ export class Admin {
   @Prop({ required: true, minlength: 3, maxlength: 50 })
   name: string;
 
-  @Prop({ required: true, unique: true, minlength: 7, maxlength: 15 })
+  @Prop({
+    required: true,
+    index: true,
+    unique: true,
+    minlength: 7,
+    maxlength: 15,
+  })
   phone: string;
 
   @Prop({ required: true, minlength: 8 })

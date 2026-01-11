@@ -6,12 +6,15 @@ import {
   Put,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { EntityService } from './entity.service';
 import { CreateEntityDto } from './dto/create-entity.dto';
 import { UpdateEntityDto } from './dto/update-entity.dto';
+import { AuthGuard } from 'src/token/auth.guard';
 
 @Controller('entity')
+@UseGuards(AuthGuard)
 export class EntityController {
   constructor(private readonly entityService: EntityService) {}
 

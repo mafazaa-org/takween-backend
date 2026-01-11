@@ -9,11 +9,13 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { RegisterAdminDto } from './dto/register-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
+import { TokenService } from 'src/token/token.service';
 
 @Injectable()
 export class AdminService {
   constructor(
     @InjectModel(Admin.name) private adminModel: Model<AdminDocument>,
+    private readonly tokenService: TokenService,
   ) {}
 
   async register(createAdminDto: RegisterAdminDto) {
@@ -43,11 +45,23 @@ export class AdminService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    const accessToken = await this.tokenService.generateAccessToken({
+      id: admin._id,
+      name: admin.name,
+      phone: admin.phone,
+    });
+
+    const refreshToken = await this.tokenService.generateRefreshToken(
+      admin as unknown as AdminDocument,
+    );
+
     return {
       admin: {
         id: admin._id,
         name: admin.name,
         phone: admin.phone,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
       },
     };
   }
