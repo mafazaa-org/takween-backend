@@ -8,6 +8,8 @@ import {
   Put,
 } from '@nestjs/common';
 import { ActivityService } from './activity.service';
+import { CreateActivityDto } from './dto/create-activity.dto';
+import { UpdateActivityDto } from './dto/update-activity.dto';
 
 @Controller('activity')
 export class ActivityController {
@@ -19,17 +21,27 @@ export class ActivityController {
   }
 
   @Post()
-  createActivity(@Body() body: { name: string }) {
-    return this.activityService.createActivity({ name: body.name });
+  createActivity(@Body() createActivityDto: CreateActivityDto) {
+    return this.activityService.createActivity({
+      name: createActivityDto.name,
+      entityId: createActivityDto.entityId,
+      customFields: createActivityDto.customFields,
+    });
   }
 
   @Put(':id')
-  updateActivity(@Param('id') id: string, @Body() body: { name: string }) {
-    return this.activityService.updateActivity(Number(id), { name: body.name });
+  updateActivity(
+    @Param('id') id: string,
+    @Body() updateActivityDto: UpdateActivityDto,
+  ) {
+    return this.activityService.updateActivity(id, {
+      name: updateActivityDto.name,
+      customFields: updateActivityDto.customFields,
+    });
   }
 
   @Delete(':id')
   deleteActivity(@Param('id') id: string) {
-    return this.activityService.deleteActivity(Number(id));
+    return this.activityService.deleteActivity(id);
   }
 }

@@ -8,6 +8,8 @@ import {
   Post,
 } from '@nestjs/common';
 import { ClassroomService } from './classroom.service';
+import { CreateClassroomDto } from './dto/create-classroom.dto';
+import { UpdateClassroomDto } from './dto/update-classroom.dto';
 
 @Controller('classroom')
 export class ClassroomController {
@@ -19,17 +21,27 @@ export class ClassroomController {
   }
 
   @Post()
-  createClassroom(@Body() body: { name: string }) {
-    return this.classroomService.createClassroom({ name: body.name });
-  }
-  @Put(':id')
-  updateClassroom(@Param('id') id: string, @Body() body: { name: string }) {
-    return this.classroomService.updateClassroom(Number(id), {
-      name: body.name,
+  createClassroom(@Body() createClassroomDto: CreateClassroomDto) {
+    return this.classroomService.createClassroom({
+      name: createClassroomDto.name,
+      activityId: createClassroomDto.activityId,
+      customFields: createClassroomDto.customFields,
     });
   }
+
+  @Put(':id')
+  updateClassroom(
+    @Param('id') id: string,
+    @Body() updateClassroomDto: UpdateClassroomDto,
+  ) {
+    return this.classroomService.updateClassroom(id, {
+      name: updateClassroomDto.name,
+      customFields: updateClassroomDto.customFields,
+    });
+  }
+
   @Delete(':id')
   deleteClassroom(@Param('id') id: string) {
-    return this.classroomService.deleteClassroom(Number(id));
+    return this.classroomService.deleteClassroom(id);
   }
 }

@@ -8,6 +8,8 @@ import {
   Delete,
 } from '@nestjs/common';
 import { EntityService } from './entity.service';
+import { CreateEntityDto } from './dto/create-entity.dto';
+import { UpdateEntityDto } from './dto/update-entity.dto';
 
 @Controller('entity')
 export class EntityController {
@@ -19,17 +21,22 @@ export class EntityController {
   }
 
   @Post()
-  createEntity(@Body() body: { name: string }) {
-    return this.entityService.createEntity({ name: body.name });
+  createEntity(@Body() createEntityDto: CreateEntityDto) {
+    return this.entityService.createEntity({
+      name: createEntityDto.name,
+    });
   }
 
   @Put(':id')
-  updateEntity(@Param('id') id: string, @Body() body: { name: string }) {
-    return this.entityService.updateEntity(Number(id), { name: body.name });
+  updateEntity(
+    @Param('id') id: string,
+    @Body() updateEntityDto: UpdateEntityDto,
+  ) {
+    return this.entityService.updateEntity(id, { name: updateEntityDto.name });
   }
 
   @Delete(':id')
   deleteEntity(@Param('id') id: string) {
-    return this.entityService.deleteEntity(Number(id));
+    return this.entityService.deleteEntity(id);
   }
 }

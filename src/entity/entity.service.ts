@@ -1,25 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Entity, EntityDocument } from './entity.schema';
 
 @Injectable()
 export class EntityService {
-  private entities: any[] = [];
+  constructor(
+    @InjectModel(Entity.name) private entityModel: Model<EntityDocument>,
+  ) {}
 
-  createEntity({ name }: { name: string }) {
-    this.entities.push({ id: this.entities.length + 1, name });
-    return this.entities[this.entities.length - 1];
+  async createEntity({ name }: { name: string }) {
+    const entity = new this.entityModel({
+      name,
+    });
+    return entity.save();
   }
 
-  getEntities() {
-    return this.entities;
+  async getEntities() {
+    return this.entityModel.find().exec();
   }
 
-  updateEntity(id: number, { name }: { name: string }) {
-    this.entities[id - 1].name = name;
-    return this.entities;
+  async updateEntity(id: string, { name }: { name: string }) {
+    return this.entityModel
+      .findByIdAndUpdate(id, { name }, { new: true })
+      .exec();
   }
 
-  deleteEntity(id: number) {
-    this.entities.splice(id - 1, 1);
-    return 'Entity  deleted successfully';
+  async deleteEntity(id: string) {
+    await this.entityModel.findByIdAndDelete(id).exec();
+    return 'Entity deleted successfully';
   }
 }

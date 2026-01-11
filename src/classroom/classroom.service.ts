@@ -1,25 +1,49 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { Classroom, ClassroomDocument } from './classroom.schema';
+import { Activity, ActivityDocument } from '../activity/activity.schema';
 
 @Injectable()
 export class ClassroomService {
-  private classrooms: any[] = [];
+  constructor(
+    @InjectModel(Classroom.name)
+    private classroomModel: Model<ClassroomDocument>,
+    @InjectModel(Activity.name)
+    private activityModel: Model<ActivityDocument>,
+  ) {}
 
-  createClassroom({ name }: { name: string }) {
-    this.classrooms.push({ id: this.classrooms.length + 1, name });
-    return this.classrooms[this.classrooms.length - 1];
+  async createClassroom({ name, activityId, customFields }: { name: string; activityId: string; customFields?: Record<string, any> }) {
+    const activity = await this.activityModel.findById(activityId).exec();
+    if (!activity) {
+      throw new NotFoundException(`Activity with ID ${activityId} not found`);
+    }
+
+    const classroom = new this.classroomModel({
+      name,
+      activityId: new Types.ObjectId(activityId),
+      customFields: customFields || {},
+    });
+    return classroom.save();
   }
 
-  getClassrooms() {
-    return this.classrooms;
+  async getClassrooms(activityId?: string) {
+    const query = activityId ? { activityId: new Types.ObjectId(activityId) } : {};
+    return this.classroomModel.find(query).exec();
   }
 
-  updateClassroom(id: number, { name }: { name: string }) {
-    this.classrooms[id - 1].name = name;
-    return this.classrooms;
+  async updateClassroom(id: string, { name, customFields }: { name?: string; customFields?: Record<string, any> }) {
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (customFields) updateData.customFields = customFields;
+    
+    return this.classroomModel
+      .findByIdAndUpdate(id, updateData, { new: true })
+      .exec();
   }
 
-  deleteClassroom(id: number) {
-    this.classrooms.splice(id - 1, 1);
+  async deleteClassroom(id: string) {
+    await this.classroomModel.findByIdAndDelete(id).exec();
     return 'Classroom deleted successfully';
   }
 }
