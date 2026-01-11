@@ -7,11 +7,15 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { RegisterAdminDto } from './dto/register-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { LoginAdminDto } from './dto/login-admin.dto';
+import { AuthGuard } from 'src/token/auth.guard';
+import { AdminGuard } from './admin.guard';
 
 @Controller('admin')
 export class AdminController {
@@ -30,17 +34,20 @@ export class AdminController {
   }
 
   @Get()
-  getAdmin() {
-    return this.adminService.getAdmin();
+  @UseGuards(AuthGuard, AdminGuard)
+  getAdmin(@Request() req: any) {
+    return this.adminService.getAdmin(req.user?._id);
   }
 
   @Put()
-  update(@Body() updateAdminDto: UpdateAdminDto) {
-    return this.adminService.update(updateAdminDto);
+  @UseGuards(AuthGuard, AdminGuard)
+  update(@Body() updateAdminDto: UpdateAdminDto, @Request() req: any) {
+    return this.adminService.update(req.user?._id, updateAdminDto);
   }
 
   @Delete()
-  delete() {
-    return this.adminService.delete();
+  @UseGuards(AuthGuard, AdminGuard)
+  delete(@Request() req: any) {
+    return this.adminService.delete(req.user?._id);
   }
 }

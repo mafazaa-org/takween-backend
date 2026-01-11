@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { TokenService } from './token.service';
 import { TokenController } from './token.controller';
+import { AuthGuard } from './auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Token, TokenSchema } from './token.schema';
@@ -11,8 +12,8 @@ import { Token, TokenSchema } from './token.schema';
     JwtModule.register({}),
     MongooseModule.forFeature([{ name: Token.name, schema: TokenSchema }]),
   ],
-  providers: [TokenService],
+  providers: [TokenService, AuthGuard],
   controllers: [TokenController],
-  exports: [TokenService],
+  exports: [TokenService, AuthGuard],
 })
 export class TokenModule {}

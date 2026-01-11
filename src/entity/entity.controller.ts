@@ -12,9 +12,10 @@ import { EntityService } from './entity.service';
 import { CreateEntityDto } from './dto/create-entity.dto';
 import { UpdateEntityDto } from './dto/update-entity.dto';
 import { AuthGuard } from 'src/token/auth.guard';
+import { AdminGuard } from 'src/admin/admin.guard';
 
 @Controller('entity')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, AdminGuard)
 export class EntityController {
   constructor(private readonly entityService: EntityService) {}
 

@@ -1,0 +1,1321 @@
+openapi: 3.0.3
+info:
+  title: Takween NestJS API
+  description: |
+    Complete API documentation for Takween NestJS application.
+
+    This API provides endpoints for managing:
+    - Admin authentication and management
+    - Entity management
+    - Activities
+    - Classrooms
+    - Students
+    - Parents
+
+    **Authentication**: Most endpoints require Bearer token authentication. Use the `/admin/login` endpoint to obtain an access token.
+  version: 1.0.0
+  contact:
+    name: Takween API Support
+
+servers:
+  - url: http://127.0.0.1:3000
+    description: Local development server
+
+tags:
+  - name: Authentication
+    description: Admin authentication and token management
+  - name: Admin
+    description: Admin account management
+  - name: Entity
+    description: Entity management (requires admin authentication)
+  - name: Activity
+    description: Activity management
+  - name: Classroom
+    description: Classroom management
+  - name: Student
+    description: Student management
+  - name: Parent
+    description: Parent management and student relationships
+
+paths:
+  # Authentication Endpoints
+  /admin/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new admin
+      description: Create a new admin account
+      operationId: registerAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterAdminDto'
+            example:
+              name: John Doe
+              phone: '1234567890'
+              password: securepassword123
+      responses:
+        '201':
+          description: Admin successfully registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  admin:
+                    $ref: '#/components/schemas/Admin'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Admin with this phone already exists
+
+  /admin/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login as admin
+      description: Authenticate and receive access and refresh tokens
+      operationId: loginAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginAdminDto'
+            example:
+              phone: '1234567890'
+              password: securepassword123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: JWT access token (Bearer token)
+                  refreshToken:
+                    type: string
+                    description: JWT refresh token
+                  admin:
+                    $ref: '#/components/schemas/Admin'
+              example:
+                accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                admin:
+                  id: 507f1f77bcf86cd799439011
+                  name: John Doe
+                  phone: 1234567890
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Admin not found
+
+  /token/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Get a new access token using a refresh token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  description: Valid refresh token
+            example:
+              refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '201':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Admin Management Endpoints
+  /admin:
+    get:
+      tags:
+        - Admin
+      summary: Get current admin
+      description: Get information about the authenticated admin
+      operationId: getAdmin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Admin information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admin'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      tags:
+        - Admin
+      summary: Update admin
+      description: Update the authenticated admin's information
+      operationId: updateAdmin
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAdminDto'
+            example:
+              name: John Updated
+              phone: 0987654321
+      responses:
+        '200':
+          description: Admin updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admin'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - Admin
+      summary: Delete admin
+      description: Delete the authenticated admin account
+      operationId: deleteAdmin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Admin deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Entity Endpoints (Requires Admin Auth)
+  /entity:
+    get:
+      tags:
+        - Entity
+      summary: Get all entities
+      description: Retrieve a list of all entities (requires admin authentication)
+      operationId: getEntities
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of entities retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Entity'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags:
+        - Entity
+      summary: Create entity
+      description: Create a new entity (requires admin authentication)
+      operationId: createEntity
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEntityDto'
+            example:
+              name: School District
+      responses:
+        '201':
+          description: Entity created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entity'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /entity/{id}:
+    put:
+      tags:
+        - Entity
+      summary: Update entity
+      description: Update an entity by ID (requires admin authentication)
+      operationId: updateEntity
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEntityDto'
+            example:
+              name: Updated Entity Name
+      responses:
+        '200':
+          description: Entity updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entity'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Entity
+      summary: Delete entity
+      description: Delete an entity by ID (requires admin authentication)
+      operationId: deleteEntity
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Entity deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Activity Endpoints
+  /activity:
+    get:
+      tags:
+        - Activity
+      summary: Get all activities
+      description: Retrieve a list of all activities
+      operationId: getActivities
+      responses:
+        '200':
+          description: List of activities retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activity'
+
+    post:
+      tags:
+        - Activity
+      summary: Create activity
+      description: Create a new activity
+      operationId: createActivity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateActivityDto'
+            example:
+              name: Mathematics Course
+              entityId: 507f1f77bcf86cd799439011
+              customFields:
+                level: Advanced
+                duration: 60
+      responses:
+        '201':
+          description: Activity created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /activity/{id}:
+    put:
+      tags:
+        - Activity
+      summary: Update activity
+      description: Update an activity by ID
+      operationId: updateActivity
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateActivityDto'
+            example:
+              name: Updated Activity Name
+              customFields:
+                level: Beginner
+      responses:
+        '200':
+          description: Activity updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Activity
+      summary: Delete activity
+      description: Delete an activity by ID
+      operationId: deleteActivity
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Activity deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Classroom Endpoints
+  /classroom:
+    get:
+      tags:
+        - Classroom
+      summary: Get all classrooms
+      description: Retrieve a list of all classrooms
+      operationId: getClassrooms
+      responses:
+        '200':
+          description: List of classrooms retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Classroom'
+
+    post:
+      tags:
+        - Classroom
+      summary: Create classroom
+      description: Create a new classroom
+      operationId: createClassroom
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClassroomDto'
+            example:
+              name: Grade 5A
+              activityId: 507f1f77bcf86cd799439011
+              customFields:
+                capacity: 30
+                roomNumber: 101
+      responses:
+        '201':
+          description: Classroom created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Classroom'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /classroom/{id}:
+    put:
+      tags:
+        - Classroom
+      summary: Update classroom
+      description: Update a classroom by ID
+      operationId: updateClassroom
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateClassroomDto'
+            example:
+              name: Grade 5B
+              customFields:
+                capacity: 25
+      responses:
+        '200':
+          description: Classroom updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Classroom'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Classroom
+      summary: Delete classroom
+      description: Delete a classroom by ID
+      operationId: deleteClassroom
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Classroom deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Student Endpoints
+  /student:
+    get:
+      tags:
+        - Student
+      summary: Get all students
+      description: Retrieve a list of all students
+      operationId: getStudents
+      responses:
+        '200':
+          description: List of students retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Student'
+
+    post:
+      tags:
+        - Student
+      summary: Create student
+      description: Create a new student
+      operationId: createStudent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStudentDto'
+            example:
+              name: Jane Smith
+              email: jane.smith@example.com
+              grade: 5
+              age: 10
+      responses:
+        '201':
+          description: Student created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /student/{id}:
+    get:
+      tags:
+        - Student
+      summary: Get student by ID
+      description: Retrieve a specific student by ID
+      operationId: getStudent
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Student retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Student
+      summary: Update student
+      description: Update a student by ID
+      operationId: updateStudent
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStudentDto'
+            example:
+              name: Jane Updated
+              email: jane.updated@example.com
+              grade: 6
+              age: 11
+      responses:
+        '200':
+          description: Student updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Student
+      summary: Delete student
+      description: Delete a student by ID
+      operationId: deleteStudent
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Student deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Parent Endpoints
+  /parent:
+    get:
+      tags:
+        - Parent
+      summary: Get all parents
+      description: Retrieve a list of all parents
+      operationId: getParents
+      responses:
+        '200':
+          description: List of parents retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Parent'
+
+    post:
+      tags:
+        - Parent
+      summary: Create parent
+      description: Create a new parent with optional student associations
+      operationId: createParent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateParentDto'
+            example:
+              name: John Parent
+              email: john.parent@example.com
+              phone: 1234567890
+              studentIds:
+                - 507f1f77bcf86cd799439011
+                - 507f1f77bcf86cd799439012
+      responses:
+        '201':
+          description: Parent created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /parent/{id}:
+    get:
+      tags:
+        - Parent
+      summary: Get parent by ID
+      description: Retrieve a specific parent by ID
+      operationId: getParent
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Parent retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Parent
+      summary: Update parent
+      description: Update a parent by ID
+      operationId: updateParent
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateParentDto'
+            example:
+              name: John Updated
+              email: john.updated@example.com
+              phone: 0987654321
+      responses:
+        '200':
+          description: Parent updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Parent
+      summary: Delete parent
+      description: Delete a parent by ID
+      operationId: deleteParent
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Parent deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /parent/{parentId}/student/{studentId}:
+    post:
+      tags:
+        - Parent
+      summary: Add student to parent
+      description: Associate a student with a parent
+      operationId: addStudentToParent
+      parameters:
+        - name: parentId
+          in: path
+          required: true
+          description: Parent ID
+          schema:
+            type: string
+        - name: studentId
+          in: path
+          required: true
+          description: Student ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Student added to parent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Parent
+      summary: Remove student from parent
+      description: Remove a student association from a parent
+      operationId: removeStudentFromParent
+      parameters:
+        - name: parentId
+          in: path
+          required: true
+          description: Parent ID
+          schema:
+            type: string
+        - name: studentId
+          in: path
+          required: true
+          description: Student ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Student removed from parent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT authentication using Bearer token.
+        Format: `Authorization: Bearer <token>`
+        Obtain token from `/admin/login` endpoint.
+
+  parameters:
+    IdPathParam:
+      name: id
+      in: path
+      required: true
+      description: MongoDB ObjectId
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{24}$'
+      example: 507f1f77bcf86cd799439011
+
+  schemas:
+    # Authentication DTOs
+    RegisterAdminDto:
+      type: object
+      required:
+        - name
+        - phone
+        - password
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: Admin full name
+          example: John Doe
+        phone:
+          type: string
+          minLength: 7
+          maxLength: 15
+          pattern: '^[0-9]+$'
+          description: Phone number (numeric string)
+          example: '1234567890'
+        password:
+          type: string
+          minLength: 8
+          format: password
+          description: Password (minimum 8 characters)
+          example: securepassword123
+
+    LoginAdminDto:
+      type: object
+      required:
+        - phone
+        - password
+      properties:
+        phone:
+          type: string
+          description: Admin phone number
+          example: '1234567890'
+        password:
+          type: string
+          format: password
+          description: Admin password
+          example: securepassword123
+
+    UpdateAdminDto:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: Admin full name
+          example: John Updated
+        phone:
+          type: string
+          minLength: 7
+          maxLength: 15
+          pattern: '^[0-9]+$'
+          description: Phone number (numeric string)
+          example: '0987654321'
+
+    # Entity DTOs
+    CreateEntityDto:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Entity name
+          example: School District
+
+    UpdateEntityDto:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Entity name
+          example: Updated Entity Name
+
+    Entity:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: MongoDB ObjectId
+          example: 507f1f77bcf86cd799439011
+        name:
+          type: string
+          example: School District
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Activity DTOs
+    CreateActivityDto:
+      type: object
+      required:
+        - name
+        - entityId
+      properties:
+        name:
+          type: string
+          description: Activity name
+          example: Mathematics Course
+        entityId:
+          type: string
+          pattern: '^[0-9a-fA-F]{24}$'
+          description: MongoDB ObjectId of the associated entity
+          example: 507f1f77bcf86cd799439011
+        customFields:
+          type: object
+          additionalProperties: true
+          description: Additional custom fields as key-value pairs
+          example:
+            level: Advanced
+            duration: 60
+
+    UpdateActivityDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Activity name
+          example: Updated Activity Name
+        customFields:
+          type: object
+          additionalProperties: true
+          description: Additional custom fields as key-value pairs
+          example:
+            level: Beginner
+
+    Activity:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: MongoDB ObjectId
+          example: 507f1f77bcf86cd799439011
+        name:
+          type: string
+          example: Mathematics Course
+        entityId:
+          type: string
+          example: 507f1f77bcf86cd799439011
+        customFields:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Classroom DTOs
+    CreateClassroomDto:
+      type: object
+      required:
+        - name
+        - activityId
+      properties:
+        name:
+          type: string
+          description: Classroom name
+          example: Grade 5A
+        activityId:
+          type: string
+          pattern: '^[0-9a-fA-F]{24}$'
+          description: MongoDB ObjectId of the associated activity
+          example: 507f1f77bcf86cd799439011
+        customFields:
+          type: object
+          additionalProperties: true
+          description: Additional custom fields as key-value pairs
+          example:
+            capacity: 30
+            roomNumber: 101
+
+    UpdateClassroomDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Classroom name
+          example: Grade 5B
+        customFields:
+          type: object
+          additionalProperties: true
+          description: Additional custom fields as key-value pairs
+          example:
+            capacity: 25
+
+    Classroom:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: MongoDB ObjectId
+          example: 507f1f77bcf86cd799439011
+        name:
+          type: string
+          example: Grade 5A
+        activityId:
+          type: string
+          example: 507f1f77bcf86cd799439011
+        customFields:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Student DTOs
+    CreateStudentDto:
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+          description: Student full name
+          example: Jane Smith
+        email:
+          type: string
+          format: email
+          description: Student email address
+          example: jane.smith@example.com
+        grade:
+          type: string
+          description: Student grade level
+          example: '5'
+        age:
+          type: integer
+          minimum: 0
+          maximum: 120
+          description: Student age
+          example: 10
+
+    UpdateStudentDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Student full name
+          example: Jane Updated
+        email:
+          type: string
+          format: email
+          description: Student email address
+          example: jane.updated@example.com
+        grade:
+          type: string
+          description: Student grade level
+          example: '6'
+        age:
+          type: integer
+          minimum: 0
+          maximum: 120
+          description: Student age
+          example: 11
+
+    Student:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: MongoDB ObjectId
+          example: 507f1f77bcf86cd799439011
+        name:
+          type: string
+          example: Jane Smith
+        email:
+          type: string
+          format: email
+          example: jane.smith@example.com
+        grade:
+          type: string
+          example: '5'
+        age:
+          type: integer
+          example: 10
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Parent DTOs
+    CreateParentDto:
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+          description: Parent full name
+          example: John Parent
+        email:
+          type: string
+          format: email
+          description: Parent email address
+          example: john.parent@example.com
+        phone:
+          type: string
+          description: Parent phone number
+          example: '1234567890'
+        studentIds:
+          type: array
+          items:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          description: Array of student MongoDB ObjectIds to associate
+          example:
+            - 507f1f77bcf86cd799439011
+            - 507f1f77bcf86cd799439012
+
+    UpdateParentDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Parent full name
+          example: John Updated
+        email:
+          type: string
+          format: email
+          description: Parent email address
+          example: john.updated@example.com
+        phone:
+          type: string
+          description: Parent phone number
+          example: '0987654321'
+
+    Parent:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: MongoDB ObjectId
+          example: 507f1f77bcf86cd799439011
+        name:
+          type: string
+          example: John Parent
+        email:
+          type: string
+          format: email
+          example: john.parent@example.com
+        phone:
+          type: string
+          example: '1234567890'
+        studentIds:
+          type: array
+          items:
+            type: string
+          description: Array of associated student IDs
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Admin Model
+    Admin:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: MongoDB ObjectId
+          example: 507f1f77bcf86cd799439011
+        name:
+          type: string
+          example: John Doe
+        phone:
+          type: string
+          example: '1234567890'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+  responses:
+    BadRequest:
+      description: Bad request - Invalid input data
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: integer
+                example: 400
+              message:
+                type: array
+                items:
+                  type: string
+                example:
+                  - name must be longer than or equal to 3 characters
+                  - phone must be a number string
+              error:
+                type: string
+                example: Bad Request
+
+    Unauthorized:
+      description: Unauthorized - Missing or invalid authentication token
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: integer
+                example: 401
+              message:
+                type: string
+                example: Invalid or expired access token
+              error:
+                type: string
+                example: Unauthorized
+
+    Forbidden:
+      description: Forbidden - Admin access required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: integer
+                example: 403
+              message:
+                type: string
+                example: Admin not found
+              error:
+                type: string
+                example: Forbidden
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: integer
+                example: 404
+              message:
+                type: string
+                example: Entity not found
+              error:
+                type: string
+                example: Not Found

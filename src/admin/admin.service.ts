@@ -2,6 +2,8 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  Req,
+  Request,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Admin, AdminDocument } from './admin.schema';
@@ -66,20 +68,20 @@ export class AdminService {
     };
   }
 
-  async getAdmin() {
-    return this.adminModel.findById('6963884fb88499a133e0d198').exec();
+  async getAdmin(id: string) {
+    return this.adminModel.findById(id).exec();
   }
 
-  async update(updateAdminDto: UpdateAdminDto) {
+  async update(id: string, updateAdminDto: UpdateAdminDto) {
     return this.adminModel
-      .findByIdAndUpdate('6963884fb88499a133e0d198', updateAdminDto, {
+      .findByIdAndUpdate(id, updateAdminDto, {
         new: true,
       })
       .exec();
   }
 
-  async delete() {
-    await this.adminModel.findByIdAndDelete('6963884fb88499a133e0d198').exec();
+  async delete(id: string) {
+    await this.adminModel.findByIdAndDelete(id).exec();
     return 'Admin deleted successfully';
   }
 }

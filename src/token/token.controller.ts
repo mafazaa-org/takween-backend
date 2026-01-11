@@ -1,7 +1,5 @@
-import { Controller, Body, Post, Req, UseGuards } from '@nestjs/common';
+import { Controller, Body, Post } from '@nestjs/common';
 import { TokenService } from './token.service';
-import { Types } from 'mongoose';
-import { AuthGuard } from './auth.guard';
 
 @Controller('token')
 export class TokenController {
