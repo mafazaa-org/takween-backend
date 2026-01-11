@@ -1,41 +1,25 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import * as bcrypt from 'bcrypt';
 
 export type AdminDocument = Admin & Document;
 
 @Schema({ timestamps: true })
 export class Admin {
-  @Prop({ required: true, minlength: 3, maxlength: 50 })
+  @Prop({
+    required: [true, 'الاسم مطلوب'],
+    minlength: [3, 'الاسم يجب أن يكون على الأقل 3 أحرف'],
+    maxlength: [50, 'الاسم يجب أن يكون على الأكثر 50 حرف'],
+  })
   name: string;
 
   @Prop({
-    required: true,
+    required: [true, 'رقم الهاتف مطلوب'],
     index: true,
-    unique: true,
-    minlength: 7,
-    maxlength: 15,
+    unique: [true, 'رقم الهاتف مسجل بالفعل'],
+    minlength: [7, 'رقم الهاتف يجب أن يكون على الأقل 7 أرقام'],
+    maxlength: [15, 'رقم الهاتف يجب أن يكون على الأكثر 15 رقم'],
   })
   phone: string;
-
-  @Prop({ required: true, minlength: 8 })
-  password: string;
 }
 
 export const AdminSchema = SchemaFactory.createForClass(Admin);
-
-// Hash password before saving
-AdminSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next();
-  }
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
-});
-
-// Remove password from JSON responses
-AdminSchema.methods.toJSON = function () {
-  const obj = this.toObject();
-  delete obj.password;
-  return obj;
-};

@@ -30,7 +30,7 @@ export class AdminController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   login(@Body() loginAdminDto: LoginAdminDto) {
-    return this.adminService.login(loginAdminDto.phone, loginAdminDto.password);
+    return this.adminService.login(loginAdminDto.phone);
   }
 
   @Get()

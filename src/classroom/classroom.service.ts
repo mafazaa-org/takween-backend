@@ -13,23 +13,14 @@ export class ClassroomService {
     private activityModel: Model<ActivityDocument>,
   ) {}
 
-  async createClassroom({ name, activityId, customFields }: { name: string; activityId: string; customFields?: Record<string, any> }) {
-    const activity = await this.activityModel.findById(activityId).exec();
-    if (!activity) {
-      throw new NotFoundException(`Activity with ID ${activityId} not found`);
-    }
-
-    const classroom = new this.classroomModel({
-      name,
-      activityId: new Types.ObjectId(activityId),
-      customFields: customFields || {},
-    });
-    return classroom.save();
+  async createClassroom({ name, activity, customFields }: { name: string; activity: string; customFields?: Record<string, any> }) {
+    const activityDoc = await this.activityModel.findById(activity).exec();
+    if (!activityDoc) throw new NotFoundException(`النشاط بالمعرف ${activity} غير موجود`);
+    return new this.classroomModel({ name, activity: new Types.ObjectId(activity), customFields: customFields || {} }).save();
   }
 
-  async getClassrooms(activityId?: string) {
-    const query = activityId ? { activityId: new Types.ObjectId(activityId) } : {};
-    return this.classroomModel.find(query).exec();
+  async getClassrooms(activity?: string) {
+    return this.classroomModel.find(activity ? { activity: new Types.ObjectId(activity) } : {}).exec();
   }
 
   async updateClassroom(id: string, { name, customFields }: { name?: string; customFields?: Record<string, any> }) {
@@ -44,6 +35,6 @@ export class ClassroomService {
 
   async deleteClassroom(id: string) {
     await this.classroomModel.findByIdAndDelete(id).exec();
-    return 'Classroom deleted successfully';
+    return 'تم حذف الفصل بنجاح';
   }
 }

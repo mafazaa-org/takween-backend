@@ -15,7 +15,7 @@ export class AuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('Access token is missing');
+      throw new UnauthorizedException('رمز الوصول مفقود');
     }
 
     try {
@@ -24,7 +24,7 @@ export class AuthGuard implements CanActivate {
       
       return true;
     } catch (error) {
-      throw new UnauthorizedException('Invalid or expired access token');
+      throw new UnauthorizedException('رمز الوصول غير صالح أو منتهي الصلاحية');
     }
   }
 

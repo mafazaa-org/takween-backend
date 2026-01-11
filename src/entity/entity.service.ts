@@ -1,19 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Entity, EntityDocument } from './entity.schema';
+import { Admin, AdminDocument } from '../admin/admin.schema';
 
 @Injectable()
 export class EntityService {
   constructor(
     @InjectModel(Entity.name) private entityModel: Model<EntityDocument>,
+    @InjectModel(Admin.name) private adminModel: Model<AdminDocument>,
   ) {}
 
-  async createEntity({ name }: { name: string }) {
-    const entity = new this.entityModel({
+  async createEntity({ name, owner }: { name: string; owner: string }) {
+    const admin = await this.adminModel.findById(owner).exec();
+    if (!admin) throw new NotFoundException(`المسؤول بالمعرف ${owner} غير موجود`);
+    return new this.entityModel({
       name,
-    });
-    return entity.save();
+      owner: new Types.ObjectId(owner),
+    }).save();
   }
 
   async getEntities() {
@@ -28,6 +32,6 @@ export class EntityService {
 
   async deleteEntity(id: string) {
     await this.entityModel.findByIdAndDelete(id).exec();
-    return 'Entity deleted successfully';
+    return 'تم حذف الكيان بنجاح';
   }
 }

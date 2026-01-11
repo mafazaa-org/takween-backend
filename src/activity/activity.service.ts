@@ -13,29 +13,27 @@ export class ActivityService {
 
   async createActivity({
     name,
-    entityId,
+    entity,
     customFields,
   }: {
     name: string;
-    entityId: string;
+    entity: string;
     customFields?: Record<string, any>;
   }) {
-    const entity = await this.entityModel.findById(entityId).exec();
-    if (!entity) {
-      throw new NotFoundException(`Entity with ID ${entityId} not found`);
-    }
-
-    const activity = new this.activityModel({
+    const entityDoc = await this.entityModel.findById(entity).exec();
+    if (!entityDoc)
+      throw new NotFoundException(`الكيان بالمعرف ${entity} غير موجود`);
+    return new this.activityModel({
       name,
-      entityId: new Types.ObjectId(entityId),
+      entity: new Types.ObjectId(entity),
       customFields: customFields || {},
-    });
-    return activity.save();
+    }).save();
   }
 
-  async getActivities(entityId?: string) {
-    const query = entityId ? { entityId: new Types.ObjectId(entityId) } : {};
-    return this.activityModel.find(query).exec();
+  async getActivities(entity?: string) {
+    return this.activityModel
+      .find(entity ? { entity: new Types.ObjectId(entity) } : {})
+      .exec();
   }
 
   async updateActivity(
@@ -56,6 +54,6 @@ export class ActivityService {
 
   async deleteActivity(id: string) {
     await this.activityModel.findByIdAndDelete(id).exec();
-    return 'Activity deleted successfully';
+    return 'تم حذف النشاط بنجاح';
   }
 }

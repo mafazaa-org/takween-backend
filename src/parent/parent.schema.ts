@@ -5,17 +5,14 @@ export type ParentDocument = Parent & Document;
 
 @Schema({ timestamps: true })
 export class Parent {
-  @Prop({ required: true })
-  name: string;
-
-  @Prop({ required: true, unique: true })
-  email: string;
-
-  @Prop()
-  phone?: string;
+  @Prop({
+    required: [true, 'رقم الهاتف مطلوب'],
+    unique: [true, 'رقم الهاتف مسجل بالفعل'],
+  })
+  phone: string;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Student' }], default: [] })
-  studentIds: Types.ObjectId[];
+  students: Types.ObjectId[];
 }
 
 export const ParentSchema = SchemaFactory.createForClass(Parent);

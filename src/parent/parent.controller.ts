@@ -16,7 +16,7 @@ export class ParentController {
   }
 
   @Post()
-  createParent(@Body() body: { name: string; email: string; phone?: string; studentIds?: string[] }) {
+  createParent(@Body() body: { name: string; email: string; phone?: string; students?: string[] }) {
     return this.parentService.createParent(body);
   }
 

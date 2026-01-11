@@ -35,7 +35,7 @@ export class TokenService {
       .populate('owner', 'id name phone');
 
     if (!existingToken) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException('رمز غير صالح');
     }
 
     const newToken = await this.generateRefreshToken(

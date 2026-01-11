@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { EntityService } from './entity.service';
 import { CreateEntityDto } from './dto/create-entity.dto';
@@ -25,10 +26,8 @@ export class EntityController {
   }
 
   @Post()
-  createEntity(@Body() createEntityDto: CreateEntityDto) {
-    return this.entityService.createEntity({
-      name: createEntityDto.name,
-    });
+  createEntity(@Body() createEntityDto: CreateEntityDto, @Request() req: any) {
+    return this.entityService.createEntity({ ...createEntityDto, owner: req.user?.id || createEntityDto.owner });
   }
 
   @Put(':id')

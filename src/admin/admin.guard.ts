@@ -19,11 +19,11 @@ export class AdminGuard implements CanActivate {
       const request = context.switchToHttp().getRequest();
       const admin = await this.adminModel.findById(request.user.id);
       if (!admin) {
-        throw new UnauthorizedException('Admin not found');
+        throw new UnauthorizedException('المسؤول غير موجود');
       }
       return true;
     } catch (error) {
-      throw new UnauthorizedException('Admin not found');
+      throw new UnauthorizedException('المسؤول غير موجود');
     }
   }
 }

@@ -11,3 +11,9 @@ alwaysApply: true
 -   **Remove duplication**: Eliminate code duplication by creating shared components, services, or utilities.
 -   **Keep components focused**: Each component/class should have a single responsibility.
 -   **Use composition over duplication**: Build complex UIs by composing smaller, reusable widgets.
+
+## Localization Rules
+
+-   **All error messages must be in Arabic**: All exception messages, error responses, and user-facing error labels must be written in Arabic.
+-   **All success messages must be in Arabic**: All success response messages and user-facing success labels must be written in Arabic.
+-   **All validation messages must be in Arabic**: All validation error messages in DTOs (using class-validator decorators) and schema validations must be written in Arabic. Every validation decorator must include an Arabic `message` parameter.

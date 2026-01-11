@@ -5,11 +5,19 @@ export type ActivityDocument = Activity & Document;
 
 @Schema({ timestamps: true })
 export class Activity {
-  @Prop({ required: true })
+  @Prop({ required: [true, 'الاسم مطلوب'] })
   name: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Entity', required: true, index: true })
-  entityId: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'Entity',
+    required: [true, 'الكيان مطلوب'],
+    index: true,
+  })
+  entity: Types.ObjectId;
+
+  @Prop({ type: Number, default: 0 })
+  price: number;
 
   @Prop({ type: Object, default: {} })
   customFields: Record<string, any>;

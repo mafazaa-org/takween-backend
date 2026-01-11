@@ -22,11 +22,7 @@ export class ActivityController {
 
   @Post()
   createActivity(@Body() createActivityDto: CreateActivityDto) {
-    return this.activityService.createActivity({
-      name: createActivityDto.name,
-      entityId: createActivityDto.entityId,
-      customFields: createActivityDto.customFields,
-    });
+    return this.activityService.createActivity(createActivityDto);
   }
 
   @Put(':id')

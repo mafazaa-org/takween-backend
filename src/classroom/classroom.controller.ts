@@ -22,11 +22,7 @@ export class ClassroomController {
 
   @Post()
   createClassroom(@Body() createClassroomDto: CreateClassroomDto) {
-    return this.classroomService.createClassroom({
-      name: createClassroomDto.name,
-      activityId: createClassroomDto.activityId,
-      customFields: createClassroomDto.customFields,
-    });
+    return this.classroomService.createClassroom(createClassroomDto);
   }
 
   @Put(':id')

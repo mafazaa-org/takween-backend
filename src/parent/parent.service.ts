@@ -11,20 +11,20 @@ export class ParentService {
     @InjectModel(Student.name) private studentModel: Model<StudentDocument>,
   ) {}
 
-  async createParent(data: { name: string; email: string; phone?: string; studentIds?: string[] }) {
-    const parent = new this.parentModel({
-      ...data,
-      studentIds: data.studentIds?.map(id => new Types.ObjectId(id)) || [],
-    });
-    return parent.save();
+  async createParent(data: { name: string; email: string; phone?: string; students?: string[] }) {
+    if (data.students?.length) {
+      const students = await this.studentModel.find({ _id: { $in: data.students } }).exec();
+      if (students.length !== data.students.length) throw new NotFoundException('بعض الطلاب غير موجودين');
+    }
+    return new this.parentModel({ ...data, students: data.students?.map(id => new Types.ObjectId(id)) || [] }).save();
   }
 
   async getParents() {
-    return this.parentModel.find().populate('studentIds').exec();
+    return this.parentModel.find().populate('students').exec();
   }
 
   async getParent(id: string) {
-    return this.parentModel.findById(id).populate('studentIds').exec();
+    return this.parentModel.findById(id).populate('students').exec();
   }
 
   async updateParent(id: string, data: { name?: string; email?: string; phone?: string }) {
@@ -33,27 +33,16 @@ export class ParentService {
 
   async addStudent(parentId: string, studentId: string) {
     const student = await this.studentModel.findById(studentId).exec();
-    if (!student) {
-      throw new NotFoundException(`Student with ID ${studentId} not found`);
-    }
-
-    return this.parentModel.findByIdAndUpdate(
-      parentId,
-      { $addToSet: { studentIds: new Types.ObjectId(studentId) } },
-      { new: true },
-    ).populate('studentIds').exec();
+    if (!student) throw new NotFoundException(`الطالب بالمعرف ${studentId} غير موجود`);
+    return this.parentModel.findByIdAndUpdate(parentId, { $addToSet: { students: new Types.ObjectId(studentId) } }, { new: true }).populate('students').exec();
   }
 
   async removeStudent(parentId: string, studentId: string) {
-    return this.parentModel.findByIdAndUpdate(
-      parentId,
-      { $pull: { studentIds: new Types.ObjectId(studentId) } },
-      { new: true },
-    ).populate('studentIds').exec();
+    return this.parentModel.findByIdAndUpdate(parentId, { $pull: { students: new Types.ObjectId(studentId) } }, { new: true }).populate('students').exec();
   }
 
   async deleteParent(id: string) {
     await this.parentModel.findByIdAndDelete(id).exec();
-    return 'Parent deleted successfully';
+    return 'تم حذف ولي الأمر بنجاح';
   }
 }

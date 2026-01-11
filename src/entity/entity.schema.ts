@@ -5,11 +5,16 @@ export type EntityDocument = Entity & Document;
 
 @Schema({ timestamps: true })
 export class Entity {
-  @Prop({ required: true })
+  @Prop({ required: [true, 'الاسم مطلوب'] })
   name: string;
 
-  // @Prop({ type: Types.ObjectId, ref: 'Admin', required: true, index: true })
-  // ownerId: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'Admin',
+    required: [true, 'المسؤول مطلوب'],
+    index: true,
+  })
+  owner: Types.ObjectId;
 }
 
 export const EntitySchema = SchemaFactory.createForClass(Entity);

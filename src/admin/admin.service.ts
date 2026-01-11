@@ -8,7 +8,6 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Admin, AdminDocument } from './admin.schema';
 import { Model } from 'mongoose';
-import * as bcrypt from 'bcrypt';
 import { RegisterAdminDto } from './dto/register-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { TokenService } from 'src/token/token.service';
@@ -25,26 +24,18 @@ export class AdminService {
       .findOne({ phone: createAdminDto.phone })
       .exec();
     if (existingAdmin) {
-      throw new ConflictException('Phone number already registered');
+      throw new ConflictException('رقم الهاتف مسجل بالفعل');
     }
 
     const newAdmin = new this.adminModel(createAdminDto);
     return newAdmin.save();
   }
 
-  async login(phone: string, password: string) {
-    const admin = await this.adminModel
-      .findOne({ phone })
-      .select('+password')
-      .exec();
+  async login(phone: string) {
+    const admin = await this.adminModel.findOne({ phone }).exec();
 
     if (!admin) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, admin.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('بيانات الدخول غير صحيحة');
     }
 
     const accessToken = await this.tokenService.generateAccessToken({
@@ -82,6 +73,6 @@ export class AdminService {
 
   async delete(id: string) {
     await this.adminModel.findByIdAndDelete(id).exec();
-    return 'Admin deleted successfully';
+    return 'تم حذف المسؤول بنجاح';
   }
 }
