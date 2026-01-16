@@ -11,8 +11,9 @@ info:
     - Classrooms
     - Students
     - Parents
+    - Teachers
 
-    **Authentication**: Most endpoints require Bearer token authentication. Use the `/admin/login` endpoint to obtain an access token.
+    **Authentication**: Most endpoints require Bearer token authentication. Use the `/admin/login` endpoint to obtain an access token. Admin login only requires phone number (no password).
   version: 1.0.0
   contact:
     name: Takween API Support
@@ -20,6 +21,8 @@ info:
 servers:
   - url: http://127.0.0.1:3000
     description: Local development server
+  - url: https://nestjs-api-dev-qyy2v.ondigitalocean.app
+    description: development server
 
 tags:
   - name: Authentication
@@ -36,6 +39,8 @@ tags:
     description: Student management
   - name: Parent
     description: Parent management and student relationships
+  - name: Teacher
+    description: Teacher management
 
 paths:
   # Authentication Endpoints
@@ -55,7 +60,6 @@ paths:
             example:
               name: John Doe
               phone: '1234567890'
-              password: securepassword123
       responses:
         '201':
           description: Admin successfully registered
@@ -88,7 +92,6 @@ paths:
               $ref: '#/components/schemas/LoginAdminDto'
             example:
               phone: '1234567890'
-              password: securepassword123
       responses:
         '200':
           description: Login successful
@@ -371,7 +374,7 @@ paths:
               $ref: '#/components/schemas/CreateActivityDto'
             example:
               name: Mathematics Course
-              entityId: 507f1f77bcf86cd799439011
+              entity: 507f1f77bcf86cd799439011
               customFields:
                 level: Advanced
                 duration: 60
@@ -469,7 +472,7 @@ paths:
               $ref: '#/components/schemas/CreateClassroomDto'
             example:
               name: Grade 5A
-              activityId: 507f1f77bcf86cd799439011
+              activity: 507f1f77bcf86cd799439011
               customFields:
                 capacity: 30
                 roomNumber: 101
@@ -684,8 +687,8 @@ paths:
             example:
               name: John Parent
               email: john.parent@example.com
-              phone: 1234567890
-              studentIds:
+              phone: '1234567890'
+              students:
                 - 507f1f77bcf86cd799439011
                 - 507f1f77bcf86cd799439012
       responses:
@@ -858,7 +861,6 @@ components:
       required:
         - name
         - phone
-        - password
       properties:
         name:
           type: string
@@ -873,28 +875,16 @@ components:
           pattern: '^[0-9]+$'
           description: Phone number (numeric string)
           example: '1234567890'
-        password:
-          type: string
-          minLength: 8
-          format: password
-          description: Password (minimum 8 characters)
-          example: securepassword123
 
     LoginAdminDto:
       type: object
       required:
         - phone
-        - password
       properties:
         phone:
           type: string
           description: Admin phone number
           example: '1234567890'
-        password:
-          type: string
-          format: password
-          description: Admin password
-          example: securepassword123
 
     UpdateAdminDto:
       type: object
@@ -923,6 +913,11 @@ components:
           type: string
           description: Entity name
           example: School District
+        owner:
+          type: string
+          pattern: '^[0-9a-fA-F]{24}$'
+          description: MongoDB ObjectId of the admin owner (optional, defaults to authenticated admin)
+          example: 507f1f77bcf86cd799439011
 
     UpdateEntityDto:
       type: object
@@ -944,6 +939,10 @@ components:
         name:
           type: string
           example: School District
+        owner:
+          type: string
+          description: MongoDB ObjectId of the admin owner
+          example: 507f1f77bcf86cd799439011
         createdAt:
           type: string
           format: date-time
@@ -956,13 +955,13 @@ components:
       type: object
       required:
         - name
-        - entityId
+        - entity
       properties:
         name:
           type: string
           description: Activity name
           example: Mathematics Course
-        entityId:
+        entity:
           type: string
           pattern: '^[0-9a-fA-F]{24}$'
           description: MongoDB ObjectId of the associated entity
@@ -999,9 +998,13 @@ components:
         name:
           type: string
           example: Mathematics Course
-        entityId:
+        entity:
           type: string
           example: 507f1f77bcf86cd799439011
+        price:
+          type: number
+          description: Activity price
+          example: 0
         customFields:
           type: object
           additionalProperties: true
@@ -1017,13 +1020,13 @@ components:
       type: object
       required:
         - name
-        - activityId
+        - activity
       properties:
         name:
           type: string
           description: Classroom name
           example: Grade 5A
-        activityId:
+        activity:
           type: string
           pattern: '^[0-9a-fA-F]{24}$'
           description: MongoDB ObjectId of the associated activity
@@ -1060,9 +1063,23 @@ components:
         name:
           type: string
           example: Grade 5A
-        activityId:
+        activity:
           type: string
           example: 507f1f77bcf86cd799439011
+        teachers:
+          type: array
+          items:
+            type: string
+          description: Array of teacher MongoDB ObjectIds
+          example:
+            - 507f1f77bcf86cd799439011
+        students:
+          type: array
+          items:
+            type: string
+          description: Array of student MongoDB ObjectIds
+          example:
+            - 507f1f77bcf86cd799439012
         customFields:
           type: object
           additionalProperties: true
@@ -1170,7 +1187,7 @@ components:
           type: string
           description: Parent phone number
           example: '1234567890'
-        studentIds:
+        students:
           type: array
           items:
             type: string
@@ -1204,17 +1221,10 @@ components:
           type: string
           description: MongoDB ObjectId
           example: 507f1f77bcf86cd799439011
-        name:
-          type: string
-          example: John Parent
-        email:
-          type: string
-          format: email
-          example: john.parent@example.com
         phone:
           type: string
           example: '1234567890'
-        studentIds:
+        students:
           type: array
           items:
             type: string
