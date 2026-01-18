@@ -1,12 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type AdminDocument = Admin & Document;
+export type UserDocument = User & Document;
 
 @Schema({ timestamps: true })
-export class Admin {
+export class User {
   @Prop({
-    required: [true, 'الاسم مطلوب'],
     minlength: [3, 'الاسم يجب أن يكون على الأقل 3 أحرف'],
     maxlength: [50, 'الاسم يجب أن يكون على الأكثر 50 حرف'],
   })
@@ -19,7 +18,10 @@ export class Admin {
     minlength: [7, 'رقم الهاتف يجب أن يكون على الأقل 7 أرقام'],
     maxlength: [15, 'رقم الهاتف يجب أن يكون على الأكثر 15 رقم'],
   })
-  phone: string;
+    phone: string;
+    
+    @Prop({enum: ["admin", "teacher", "parent"], required: [true, 'النوع مطلوب']})
+    type: "admin" | "teacher" | "parent"
 }
 
-export const AdminSchema = SchemaFactory.createForClass(Admin);
+export const UserSchema = SchemaFactory.createForClass(User);

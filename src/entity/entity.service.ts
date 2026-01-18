@@ -2,26 +2,26 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Entity, EntityDocument } from './entity.schema';
-import { Admin, AdminDocument } from '../admin/admin.schema';
+import { User, UserDocument } from 'src/user/user.schema';
 
 @Injectable()
 export class EntityService {
   constructor(
     @InjectModel(Entity.name) private entityModel: Model<EntityDocument>,
-    @InjectModel(Admin.name) private adminModel: Model<AdminDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {}
 
   async createEntity({ name, owner }: { name: string; owner: string }) {
-    const admin = await this.adminModel.findById(owner).exec();
-    if (!admin) throw new NotFoundException(`المسؤول بالمعرف ${owner} غير موجود`);
+    const user = await this.userModel.findById(owner).exec();
+    if (!user) throw new NotFoundException(`المستخدم بالمعرف ${owner} غير موجود`);
     return new this.entityModel({
       name,
       owner: new Types.ObjectId(owner),
     }).save();
   }
 
-  async getEntities() {
-    return this.entityModel.find().exec();
+  async getEntities(owner: string) {
+    return this.entityModel.find({ owner: new Types.ObjectId(owner) }).exec();
   }
 
   async updateEntity(id: string, { name }: { name: string }) {

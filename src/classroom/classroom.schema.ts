@@ -22,8 +22,6 @@ export class Classroom {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Student' }], default: [] })
   students: Types.ObjectId[];
 
-  @Prop({ type: Object, default: {} })
-  customFields: Record<string, any>;
 }
 
 export const ClassroomSchema = SchemaFactory.createForClass(Classroom);

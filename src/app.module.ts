@@ -5,10 +5,8 @@ import { ActivityModule } from './activity/activity.module';
 import { ClassroomModule } from './classroom/classroom.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { StudentModule } from './student/student.module';
-import { ParentModule } from './parent/parent.module';
-import { AdminModule } from './admin/admin.module';
 import { TokenModule } from './token/token.module';
-import { TeacherModule } from './teacher/teacher.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -26,11 +24,9 @@ import { TeacherModule } from './teacher/teacher.module';
     EntityModule,
     ActivityModule,
     ClassroomModule,
-    StudentModule,
-    ParentModule,
-    AdminModule,
+    StudentModule,  
     TokenModule,
-    TeacherModule,
+    UserModule,
   ],
 })
 export class AppModule {}

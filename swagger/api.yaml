@@ -5,15 +5,13 @@ info:
     Complete API documentation for Takween NestJS application.
 
     This API provides endpoints for managing:
-    - Admin authentication and management
+    - User authentication and registration (phone verification)
     - Entity management
     - Activities
     - Classrooms
     - Students
-    - Parents
-    - Teachers
 
-    **Authentication**: Most endpoints require Bearer token authentication. Use the `/admin/login` endpoint to obtain an access token. Admin login only requires phone number (no password).
+    **Authentication**: Most endpoints require Bearer token authentication. Use the `/user/phone/verify` endpoint to obtain an access token. User authentication uses phone number verification with SMS codes.
   version: 1.0.0
   contact:
     name: Takween API Support
@@ -21,105 +19,25 @@ info:
 servers:
   - url: http://127.0.0.1:3000
     description: Local development server
-  - url: https://nestjs-api-dev-qyy2v.ondigitalocean.app
+  - url: https://nestjs-api-dev-e8b7t.ondigitalocean.app
     description: development server
 
 tags:
   - name: Authentication
-    description: Admin authentication and token management
-  - name: Admin
-    description: Admin account management
+    description: Token management and refresh
+  - name: User
+    description: User registration and phone verification
   - name: Entity
-    description: Entity management (requires admin authentication)
+    description: Entity management (requires authentication)
   - name: Activity
     description: Activity management
   - name: Classroom
     description: Classroom management
   - name: Student
     description: Student management
-  - name: Parent
-    description: Parent management and student relationships
-  - name: Teacher
-    description: Teacher management
 
 paths:
   # Authentication Endpoints
-  /admin/register:
-    post:
-      tags:
-        - Authentication
-      summary: Register a new admin
-      description: Create a new admin account
-      operationId: registerAdmin
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterAdminDto'
-            example:
-              name: John Doe
-              phone: '1234567890'
-      responses:
-        '201':
-          description: Admin successfully registered
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  admin:
-                    $ref: '#/components/schemas/Admin'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '409':
-          description: Admin with this phone already exists
-
-  /admin/login:
-    post:
-      tags:
-        - Authentication
-      summary: Login as admin
-      description: Authenticate and receive access and refresh tokens
-      operationId: loginAdmin
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginAdminDto'
-            example:
-              phone: '1234567890'
-      responses:
-        '200':
-          description: Login successful
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  accessToken:
-                    type: string
-                    description: JWT access token (Bearer token)
-                  refreshToken:
-                    type: string
-                    description: JWT refresh token
-                  admin:
-                    $ref: '#/components/schemas/Admin'
-              example:
-                accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-                refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-                admin:
-                  id: 507f1f77bcf86cd799439011
-                  name: John Doe
-                  phone: 1234567890
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          description: Admin not found
-
   /token/refresh:
     post:
       tags:
@@ -151,37 +69,129 @@ paths:
                 properties:
                   accessToken:
                     type: string
+                    description: New JWT access token
                   refreshToken:
                     type: string
+                    description: New JWT refresh token
+              example:
+                accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  # Admin Management Endpoints
-  /admin:
+  # User Endpoints
+  /user/phone/register:
+    post:
+      tags:
+        - User
+      summary: Register user and send verification code
+      description: Register a new user account (admin, teacher, or parent) and send a verification code to the phone number
+      operationId: phoneRegisterUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhoneRegisterDto'
+            example:
+              phone: '1234567890'
+              type: admin
+      responses:
+        '201':
+          description: User registered and verification code sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          description: Too many requests - Please wait before requesting a new code
+
+  /user/phone/verify:
+    post:
+      tags:
+        - User
+      summary: Verify phone number and login
+      description: Verify the phone verification code and receive access and refresh tokens
+      operationId: phoneVerifyUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhoneVerifyDto'
+            example:
+              phone: '1234567890'
+              code: '123456'
+      responses:
+        '200':
+          description: Phone verified and login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  admin:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: MongoDB ObjectId
+                        example: 507f1f77bcf86cd799439011
+                      name:
+                        type: string
+                        example: John Doe
+                      phone:
+                        type: string
+                        example: '1234567890'
+                      accessToken:
+                        type: string
+                        description: JWT access token (Bearer token)
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                      refreshToken:
+                        type: string
+                        description: JWT refresh token
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+              example:
+                admin:
+                  id: 507f1f77bcf86cd799439011
+                  name: John Doe
+                  phone: '1234567890'
+                  accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /user:
     get:
       tags:
-        - Admin
-      summary: Get current admin
-      description: Get information about the authenticated admin
-      operationId: getAdmin
+        - User
+      summary: Get current user
+      description: Get information about the authenticated user
+      operationId: getCurrentUser
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: Admin information retrieved successfully
+          description: User information retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Admin'
+                $ref: '#/components/schemas/User'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
     put:
       tags:
-        - Admin
-      summary: Update admin
-      description: Update the authenticated admin's information
-      operationId: updateAdmin
+        - User
+      summary: Update current user
+      description: Update the authenticated user's information
+      operationId: updateCurrentUser
       security:
         - bearerAuth: []
       requestBody:
@@ -189,33 +199,34 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateAdminDto'
+              $ref: '#/components/schemas/UpdateUserDto'
             example:
               name: John Updated
-              phone: 0987654321
       responses:
         '200':
-          description: Admin updated successfully
+          description: User updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Admin'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                $ref: '#/components/schemas/User'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
     delete:
       tags:
-        - Admin
-      summary: Delete admin
-      description: Delete the authenticated admin account
-      operationId: deleteAdmin
+        - User
+      summary: Delete current user
+      description: Delete the authenticated user account
+      operationId: deleteCurrentUser
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: Admin deleted successfully
+          description: User deleted successfully
           content:
             application/json:
               schema:
@@ -223,16 +234,19 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: تم حذف المستخدم بنجاح
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
-  # Entity Endpoints (Requires Admin Auth)
+  # Entity Endpoints (Requires Admin Authentication)
   /entity:
     get:
       tags:
         - Entity
       summary: Get all entities
-      description: Retrieve a list of all entities (requires admin authentication)
+      description: Retrieve a list of all entities for the authenticated admin (requires admin authentication)
       operationId: getEntities
       security:
         - bearerAuth: []
@@ -248,7 +262,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          description: Forbidden - Admin access required
 
     post:
       tags:
@@ -278,7 +292,9 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          description: Forbidden - Admin access required
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /entity/{id}:
     put:
@@ -311,7 +327,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          description: Forbidden - Admin access required
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -335,21 +351,33 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: تم حذف الكيان بنجاح
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          description: Forbidden - Admin access required
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # Activity Endpoints
+  # Activity Endpoints (Requires Admin Authentication)
   /activity:
     get:
       tags:
         - Activity
       summary: Get all activities
-      description: Retrieve a list of all activities
+      description: Retrieve a list of all activities (requires admin authentication)
       operationId: getActivities
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: entity
+          in: query
+          required: false
+          description: Filter activities by entity ID
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          example: 507f1f77bcf86cd799439011
       responses:
         '200':
           description: List of activities retrieved successfully
@@ -359,13 +387,19 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Activity'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Forbidden - Admin access required
 
     post:
       tags:
         - Activity
       summary: Create activity
-      description: Create a new activity
+      description: Create a new activity (requires admin authentication)
       operationId: createActivity
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -375,9 +409,7 @@ paths:
             example:
               name: Mathematics Course
               entity: 507f1f77bcf86cd799439011
-              customFields:
-                level: Advanced
-                duration: 60
+              price: 100
       responses:
         '201':
           description: Activity created successfully
@@ -387,14 +419,22 @@ paths:
                 $ref: '#/components/schemas/Activity'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /activity/{id}:
     put:
       tags:
         - Activity
       summary: Update activity
-      description: Update an activity by ID
+      description: Update an activity by ID (requires admin authentication)
       operationId: updateActivity
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/IdPathParam'
       requestBody:
@@ -405,8 +445,7 @@ paths:
               $ref: '#/components/schemas/UpdateActivityDto'
             example:
               name: Updated Activity Name
-              customFields:
-                level: Beginner
+              price: 150
       responses:
         '200':
           description: Activity updated successfully
@@ -416,6 +455,10 @@ paths:
                 $ref: '#/components/schemas/Activity'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Forbidden - Admin access required
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -423,8 +466,10 @@ paths:
       tags:
         - Activity
       summary: Delete activity
-      description: Delete an activity by ID
+      description: Delete an activity by ID (requires admin authentication)
       operationId: deleteActivity
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/IdPathParam'
       responses:
@@ -437,6 +482,11 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: تم حذف النشاط بنجاح
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Forbidden - Admin access required
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -473,9 +523,6 @@ paths:
             example:
               name: Grade 5A
               activity: 507f1f77bcf86cd799439011
-              customFields:
-                capacity: 30
-                roomNumber: 101
       responses:
         '201':
           description: Classroom created successfully
@@ -503,8 +550,6 @@ paths:
               $ref: '#/components/schemas/UpdateClassroomDto'
             example:
               name: Grade 5B
-              customFields:
-                capacity: 25
       responses:
         '200':
           description: Classroom updated successfully
@@ -654,183 +699,6 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # Parent Endpoints
-  /parent:
-    get:
-      tags:
-        - Parent
-      summary: Get all parents
-      description: Retrieve a list of all parents
-      operationId: getParents
-      responses:
-        '200':
-          description: List of parents retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Parent'
-
-    post:
-      tags:
-        - Parent
-      summary: Create parent
-      description: Create a new parent with optional student associations
-      operationId: createParent
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateParentDto'
-            example:
-              name: John Parent
-              email: john.parent@example.com
-              phone: '1234567890'
-              students:
-                - 507f1f77bcf86cd799439011
-                - 507f1f77bcf86cd799439012
-      responses:
-        '201':
-          description: Parent created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Parent'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-
-  /parent/{id}:
-    get:
-      tags:
-        - Parent
-      summary: Get parent by ID
-      description: Retrieve a specific parent by ID
-      operationId: getParent
-      parameters:
-        - $ref: '#/components/parameters/IdPathParam'
-      responses:
-        '200':
-          description: Parent retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Parent'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-    put:
-      tags:
-        - Parent
-      summary: Update parent
-      description: Update a parent by ID
-      operationId: updateParent
-      parameters:
-        - $ref: '#/components/parameters/IdPathParam'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateParentDto'
-            example:
-              name: John Updated
-              email: john.updated@example.com
-              phone: 0987654321
-      responses:
-        '200':
-          description: Parent updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Parent'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-    delete:
-      tags:
-        - Parent
-      summary: Delete parent
-      description: Delete a parent by ID
-      operationId: deleteParent
-      parameters:
-        - $ref: '#/components/parameters/IdPathParam'
-      responses:
-        '200':
-          description: Parent deleted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /parent/{parentId}/student/{studentId}:
-    post:
-      tags:
-        - Parent
-      summary: Add student to parent
-      description: Associate a student with a parent
-      operationId: addStudentToParent
-      parameters:
-        - name: parentId
-          in: path
-          required: true
-          description: Parent ID
-          schema:
-            type: string
-        - name: studentId
-          in: path
-          required: true
-          description: Student ID
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Student added to parent successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Parent'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-    delete:
-      tags:
-        - Parent
-      summary: Remove student from parent
-      description: Remove a student association from a parent
-      operationId: removeStudentFromParent
-      parameters:
-        - name: parentId
-          in: path
-          required: true
-          description: Parent ID
-          schema:
-            type: string
-        - name: studentId
-          in: path
-          required: true
-          description: Student ID
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Student removed from parent successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Parent'
-        '404':
-          $ref: '#/components/responses/NotFound'
 
 components:
   securitySchemes:
@@ -841,7 +709,7 @@ components:
       description: |
         JWT authentication using Bearer token.
         Format: `Authorization: Bearer <token>`
-        Obtain token from `/admin/login` endpoint.
+        Obtain token from `/user/phone/verify` endpoint.
 
   parameters:
     IdPathParam:
@@ -855,54 +723,6 @@ components:
       example: 507f1f77bcf86cd799439011
 
   schemas:
-    # Authentication DTOs
-    RegisterAdminDto:
-      type: object
-      required:
-        - name
-        - phone
-      properties:
-        name:
-          type: string
-          minLength: 3
-          maxLength: 50
-          description: Admin full name
-          example: John Doe
-        phone:
-          type: string
-          minLength: 7
-          maxLength: 15
-          pattern: '^[0-9]+$'
-          description: Phone number (numeric string)
-          example: '1234567890'
-
-    LoginAdminDto:
-      type: object
-      required:
-        - phone
-      properties:
-        phone:
-          type: string
-          description: Admin phone number
-          example: '1234567890'
-
-    UpdateAdminDto:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 3
-          maxLength: 50
-          description: Admin full name
-          example: John Updated
-        phone:
-          type: string
-          minLength: 7
-          maxLength: 15
-          pattern: '^[0-9]+$'
-          description: Phone number (numeric string)
-          example: '0987654321'
-
     # Entity DTOs
     CreateEntityDto:
       type: object
@@ -916,7 +736,7 @@ components:
         owner:
           type: string
           pattern: '^[0-9a-fA-F]{24}$'
-          description: MongoDB ObjectId of the admin owner (optional, defaults to authenticated admin)
+          description: MongoDB ObjectId of the user owner (optional, defaults to authenticated user)
           example: 507f1f77bcf86cd799439011
 
     UpdateEntityDto:
@@ -941,7 +761,7 @@ components:
           example: School District
         owner:
           type: string
-          description: MongoDB ObjectId of the admin owner
+          description: MongoDB ObjectId of the user owner
           example: 507f1f77bcf86cd799439011
         createdAt:
           type: string
@@ -966,13 +786,11 @@ components:
           pattern: '^[0-9a-fA-F]{24}$'
           description: MongoDB ObjectId of the associated entity
           example: 507f1f77bcf86cd799439011
-        customFields:
-          type: object
-          additionalProperties: true
-          description: Additional custom fields as key-value pairs
-          example:
-            level: Advanced
-            duration: 60
+        price:
+          type: number
+          minimum: 0
+          description: Activity price (optional, defaults to 0)
+          example: 100
 
     UpdateActivityDto:
       type: object
@@ -981,12 +799,11 @@ components:
           type: string
           description: Activity name
           example: Updated Activity Name
-        customFields:
-          type: object
-          additionalProperties: true
-          description: Additional custom fields as key-value pairs
-          example:
-            level: Beginner
+        price:
+          type: number
+          minimum: 0
+          description: Activity price (optional)
+          example: 150
 
     Activity:
       type: object
@@ -1005,9 +822,6 @@ components:
           type: number
           description: Activity price
           example: 0
-        customFields:
-          type: object
-          additionalProperties: true
         createdAt:
           type: string
           format: date-time
@@ -1031,13 +845,6 @@ components:
           pattern: '^[0-9a-fA-F]{24}$'
           description: MongoDB ObjectId of the associated activity
           example: 507f1f77bcf86cd799439011
-        customFields:
-          type: object
-          additionalProperties: true
-          description: Additional custom fields as key-value pairs
-          example:
-            capacity: 30
-            roomNumber: 101
 
     UpdateClassroomDto:
       type: object
@@ -1046,12 +853,6 @@ components:
           type: string
           description: Classroom name
           example: Grade 5B
-        customFields:
-          type: object
-          additionalProperties: true
-          description: Additional custom fields as key-value pairs
-          example:
-            capacity: 25
 
     Classroom:
       type: object
@@ -1080,9 +881,6 @@ components:
           description: Array of student MongoDB ObjectIds
           example:
             - 507f1f77bcf86cd799439012
-        customFields:
-          type: object
-          additionalProperties: true
         createdAt:
           type: string
           format: date-time
@@ -1167,77 +965,57 @@ components:
           type: string
           format: date-time
 
-    # Parent DTOs
-    CreateParentDto:
+    # User DTOs
+    PhoneRegisterDto:
       type: object
       required:
-        - name
-        - email
+        - phone
+        - type
       properties:
-        name:
-          type: string
-          description: Parent full name
-          example: John Parent
-        email:
-          type: string
-          format: email
-          description: Parent email address
-          example: john.parent@example.com
         phone:
           type: string
-          description: Parent phone number
+          minLength: 7
+          maxLength: 15
+          description: Phone number (numeric string)
           example: '1234567890'
-        students:
-          type: array
-          items:
-            type: string
-            pattern: '^[0-9a-fA-F]{24}$'
-          description: Array of student MongoDB ObjectIds to associate
-          example:
-            - 507f1f77bcf86cd799439011
-            - 507f1f77bcf86cd799439012
+        type:
+          type: string
+          enum:
+            - admin
+            - teacher
+            - parent
+          description: User type
+          example: admin
 
-    UpdateParentDto:
+    PhoneVerifyDto:
+      type: object
+      required:
+        - phone
+        - code
+      properties:
+        phone:
+          type: string
+          minLength: 7
+          maxLength: 15
+          description: Phone number (numeric string)
+          example: '1234567890'
+        code:
+          type: string
+          description: Verification code sent to phone
+          example: '123456'
+
+    UpdateUserDto:
       type: object
       properties:
         name:
           type: string
-          description: Parent full name
+          minLength: 3
+          maxLength: 50
+          description: User full name (optional)
           example: John Updated
-        email:
-          type: string
-          format: email
-          description: Parent email address
-          example: john.updated@example.com
-        phone:
-          type: string
-          description: Parent phone number
-          example: '0987654321'
 
-    Parent:
-      type: object
-      properties:
-        _id:
-          type: string
-          description: MongoDB ObjectId
-          example: 507f1f77bcf86cd799439011
-        phone:
-          type: string
-          example: '1234567890'
-        students:
-          type: array
-          items:
-            type: string
-          description: Array of associated student IDs
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-
-    # Admin Model
-    Admin:
+    # User Model
+    User:
       type: object
       properties:
         _id:
@@ -1246,10 +1024,24 @@ components:
           example: 507f1f77bcf86cd799439011
         name:
           type: string
+          minLength: 3
+          maxLength: 50
+          description: User full name (optional)
           example: John Doe
         phone:
           type: string
+          minLength: 7
+          maxLength: 15
+          description: Phone number (unique)
           example: '1234567890'
+        type:
+          type: string
+          enum:
+            - admin
+            - teacher
+            - parent
+          description: User type
+          example: admin
         createdAt:
           type: string
           format: date-time
@@ -1295,23 +1087,6 @@ components:
               error:
                 type: string
                 example: Unauthorized
-
-    Forbidden:
-      description: Forbidden - Admin access required
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              statusCode:
-                type: integer
-                example: 403
-              message:
-                type: string
-                example: Admin not found
-              error:
-                type: string
-                example: Forbidden
 
     NotFound:
       description: Resource not found

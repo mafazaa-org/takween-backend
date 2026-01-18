@@ -5,7 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Token, TokenDocument } from './token.schema';
 import { Model, Types } from 'mongoose';
 import { randomBytes } from 'crypto';
-import { Admin, AdminDocument } from 'src/admin/admin.schema';
+import { User, UserDocument } from 'src/user/user.schema';
 
 @Injectable()
 export class TokenService {
@@ -24,9 +24,10 @@ export class TokenService {
   }
 
   async verifyAccessToken(token: string) {
-    return this.jwtService.verifyAsync(token, {
+    const payload = await this.jwtService.verifyAsync(token, {
       secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
     });
+    return { id: payload.id || payload._id, phone: payload.phone };
   }
 
   async refreshToken(token: string) {
@@ -49,7 +50,7 @@ export class TokenService {
     };
   }
 
-  async generateRefreshToken(owner: AdminDocument) {
+  async generateRefreshToken(owner: UserDocument) {
     const newToken = randomBytes(32).toString('hex');
 
     const expiresAt = new Date(

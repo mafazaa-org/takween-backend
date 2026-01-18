@@ -13,16 +13,17 @@ import { EntityService } from './entity.service';
 import { CreateEntityDto } from './dto/create-entity.dto';
 import { UpdateEntityDto } from './dto/update-entity.dto';
 import { AuthGuard } from 'src/token/auth.guard';
-import { AdminGuard } from 'src/admin/admin.guard';
+import { UserTypeGuard } from 'src/user/user-type.guard';
 
 @Controller('entity')
-@UseGuards(AuthGuard, AdminGuard)
+@UseGuards(AuthGuard, UserTypeGuard("admin"))
+
 export class EntityController {
   constructor(private readonly entityService: EntityService) {}
 
   @Get()
-  getEntities() {
-    return this.entityService.getEntities();
+  getEntities(@Request() req: any) {
+    return this.entityService.getEntities(req.user?.id as string);
   }
 
   @Post()

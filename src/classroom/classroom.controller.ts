@@ -32,7 +32,6 @@ export class ClassroomController {
   ) {
     return this.classroomService.updateClassroom(id, {
       name: updateClassroomDto.name,
-      customFields: updateClassroomDto.customFields,
     });
   }
 

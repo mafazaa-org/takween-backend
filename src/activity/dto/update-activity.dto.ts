@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsOptional, IsObject } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsNumber, Min } from 'class-validator';
 
 export class UpdateActivityDto {
   @IsOptional()
@@ -7,6 +7,7 @@ export class UpdateActivityDto {
   name?: string;
 
   @IsOptional()
-  @IsObject({ message: 'الحقول المخصصة يجب أن تكون كائن' })
-  customFields?: Record<string, any>;
+  @IsNumber({}, { message: 'السعر يجب أن يكون رقم' })
+  @Min(0, { message: 'السعر يجب أن يكون أكبر من أو يساوي صفر' })
+  price?: number;
 }

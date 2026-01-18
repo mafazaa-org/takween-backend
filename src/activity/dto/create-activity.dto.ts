@@ -3,7 +3,8 @@ import {
   IsString,
   IsMongoId,
   IsOptional,
-  IsObject,
+  IsNumber,
+  Min,
 } from 'class-validator';
 
 export class CreateActivityDto {
@@ -16,6 +17,7 @@ export class CreateActivityDto {
   entity: string;
 
   @IsOptional()
-  @IsObject({ message: 'الحقول المخصصة يجب أن تكون كائن' })
-  customFields?: Record<string, any>;
+  @IsNumber({}, { message: 'السعر يجب أن يكون رقم' })
+  @Min(0, { message: 'السعر يجب أن يكون أكبر من أو يساوي صفر' })
+  price?: number;
 }

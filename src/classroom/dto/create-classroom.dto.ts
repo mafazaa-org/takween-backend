@@ -8,9 +8,5 @@ export class CreateClassroomDto {
   @IsMongoId({ message: 'معرف النشاط غير صالح' })
   @IsNotEmpty({ message: 'النشاط مطلوب' })
   activity: string;
-
-  @IsOptional()
-  @IsObject({ message: 'الحقول المخصصة يجب أن تكون كائن' })
-  customFields?: Record<string, any>;
 }
 

@@ -19,8 +19,7 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const payload = await this.tokenService.verifyAccessToken(token);
-      request.user = payload;
+      request.user = await this.tokenService.verifyAccessToken(token);
       
       return true;
     } catch (error) {

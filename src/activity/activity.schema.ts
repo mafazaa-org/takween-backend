@@ -19,8 +19,6 @@ export class Activity {
   @Prop({ type: Number, default: 0 })
   price: number;
 
-  @Prop({ type: Object, default: {} })
-  customFields: Record<string, any>;
 }
 
 export const ActivitySchema = SchemaFactory.createForClass(Activity);
