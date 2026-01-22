@@ -6,14 +6,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Token, TokenSchema } from './token.schema';
 import { VerificationCodeService } from './verification-code.service';
-import { VerificationCode, VerificationCodeSchema } from './verification-code.schema';
 
 @Global()
 @Module({
   imports: [
     JwtModule.register({}),
     MongooseModule.forFeature([{ name: Token.name, schema: TokenSchema }]),
-    MongooseModule.forFeature([{ name: VerificationCode.name, schema: VerificationCodeSchema }]),
   ],
   providers: [TokenService, AuthGuard, VerificationCodeService],
   controllers: [TokenController],
