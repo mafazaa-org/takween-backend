@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
+import { Sitting } from 'src/sitting/sitting.schema';
 
 export type StudentDocument = Student & Document;
 
@@ -9,16 +10,10 @@ export class Student {
   name: string;
 
   @Prop({
-    required: [true, 'البريد الإلكتروني مطلوب'],
-    unique: [true, 'البريد الإلكتروني مسجل بالفعل'],
+    type: [{ type: Types.ObjectId, ref: Sitting.name }],
+    default: [],
   })
-  email: string;
-
-  @Prop()
-  grade?: string;
-
-  @Prop()
-  age?: number;
+  sittings: Types.ObjectId[];
 }
 
 export const StudentSchema = SchemaFactory.createForClass(Student);
