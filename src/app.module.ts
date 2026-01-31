@@ -8,6 +8,8 @@ import { StudentModule } from './student/student.module';
 import { TokenModule } from './token/token.module';
 import { UserModule } from './user/user.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import { SittingModule } from './sitting/sitting.module';
+import { ParentModule } from './parent/parent.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
     StudentModule,  
     TokenModule,
     UserModule,
+    SittingModule,
+    ParentModule,
   ],
   providers: [LoggerMiddleware],
 })

@@ -47,13 +47,11 @@ export class UserService {
         );
 
         return {
-            admin: {
                 id: user._id,
                 name: user.name,
                 phone: user.phone,
                 accessToken: accessToken,
-                refreshToken: refreshToken,
-            },
+            refreshToken: refreshToken,
         };
     }
 

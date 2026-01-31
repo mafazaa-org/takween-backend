@@ -132,34 +132,30 @@ paths:
               schema:
                 type: object
                 properties:
-                  admin:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                        description: MongoDB ObjectId
-                        example: 507f1f77bcf86cd799439011
-                      name:
-                        type: string
-                        example: John Doe
-                      phone:
-                        type: string
-                        example: '1234567890'
-                      accessToken:
-                        type: string
-                        description: JWT access token (Bearer token)
-                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-                      refreshToken:
-                        type: string
-                        description: JWT refresh token
-                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  id:
+                    type: string
+                    description: MongoDB ObjectId
+                    example: 507f1f77bcf86cd799439011
+                  name:
+                    type: string
+                    example: John Doe
+                  phone:
+                    type: string
+                    example: '1234567890'
+                  accessToken:
+                    type: string
+                    description: JWT access token (Bearer token)
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refreshToken:
+                    type: string
+                    description: JWT refresh token
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
               example:
-                admin:
-                  id: 507f1f77bcf86cd799439011
-                  name: John Doe
-                  phone: '1234567890'
-                  accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-                  refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                id: 507f1f77bcf86cd799439011
+                name: John Doe
+                phone: '1234567890'
+                accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -615,9 +611,6 @@ paths:
               $ref: '#/components/schemas/CreateStudentDto'
             example:
               name: Jane Smith
-              email: jane.smith@example.com
-              grade: 5
-              age: 10
       responses:
         '201':
           description: Student created successfully
@@ -663,9 +656,6 @@ paths:
               $ref: '#/components/schemas/UpdateStudentDto'
             example:
               name: Jane Updated
-              email: jane.updated@example.com
-              grade: 6
-              age: 11
       responses:
         '200':
           description: Student updated successfully
@@ -893,27 +883,11 @@ components:
       type: object
       required:
         - name
-        - email
       properties:
         name:
           type: string
           description: Student full name
           example: Jane Smith
-        email:
-          type: string
-          format: email
-          description: Student email address
-          example: jane.smith@example.com
-        grade:
-          type: string
-          description: Student grade level
-          example: '5'
-        age:
-          type: integer
-          minimum: 0
-          maximum: 120
-          description: Student age
-          example: 10
 
     UpdateStudentDto:
       type: object
@@ -922,21 +896,6 @@ components:
           type: string
           description: Student full name
           example: Jane Updated
-        email:
-          type: string
-          format: email
-          description: Student email address
-          example: jane.updated@example.com
-        grade:
-          type: string
-          description: Student grade level
-          example: '6'
-        age:
-          type: integer
-          minimum: 0
-          maximum: 120
-          description: Student age
-          example: 11
 
     Student:
       type: object
@@ -948,16 +907,6 @@ components:
         name:
           type: string
           example: Jane Smith
-        email:
-          type: string
-          format: email
-          example: jane.smith@example.com
-        grade:
-          type: string
-          example: '5'
-        age:
-          type: integer
-          example: 10
         createdAt:
           type: string
           format: date-time

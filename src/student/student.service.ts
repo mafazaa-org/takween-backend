@@ -9,7 +9,7 @@ export class StudentService {
     @InjectModel(Student.name) private studentModel: Model<StudentDocument>,
   ) {}
 
-  async createStudent(data: { name: string; email: string; grade?: string; age?: number }) {
+  async createStudent(data: { name: string }) {
     const student = new this.studentModel(data);
     return student.save();
   }
@@ -22,7 +22,7 @@ export class StudentService {
     return this.studentModel.findById(id).exec();
   }
 
-  async updateStudent(id: string, data: { name?: string; email?: string; grade?: string; age?: number }) {
+  async updateStudent(id: string, data: { name?: string }) {
     return this.studentModel.findByIdAndUpdate(id, data, { new: true }).exec();
   }
 

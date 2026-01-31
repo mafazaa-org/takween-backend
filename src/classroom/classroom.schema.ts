@@ -16,7 +16,10 @@ export class Classroom {
   })
   activity: Types.ObjectId;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Teacher' }], default: [] })
+  @Prop()
+  level: string;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   teachers: Types.ObjectId[];
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Student' }], default: [] })

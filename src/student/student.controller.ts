@@ -16,12 +16,12 @@ export class StudentController {
   }
 
   @Post()
-  createStudent(@Body() body: { name: string; email: string; grade?: string; age?: number }) {
+  createStudent(@Body() body: { name: string }) {
     return this.studentService.createStudent(body);
   }
 
   @Put(':id')
-  updateStudent(@Param('id') id: string, @Body() body: { name?: string; email?: string; grade?: string; age?: number }) {
+  updateStudent(@Param('id') id: string, @Body() body: { name?: string }) {
     return this.studentService.updateStudent(id, body);
   }
 
