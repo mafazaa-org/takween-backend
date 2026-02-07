@@ -14,6 +14,13 @@ export class Student {
     default: [],
   })
   sittings: Types.ObjectId[];
+
+  @Prop({
+    index: true,
+    minlength: [7, 'رقم هاتف الولي يجب أن يكون على الأقل 7 أرقام'],
+    maxlength: [15, 'رقم هاتف الولي يجب أن يكون على الأكثر 15 رقم'],
+  })
+  parent_phone_number: string;
 }
 
 export const StudentSchema = SchemaFactory.createForClass(Student);

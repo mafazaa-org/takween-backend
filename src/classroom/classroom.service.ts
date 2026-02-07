@@ -40,4 +40,20 @@ export class ClassroomService {
     await this.classroomModel.findByIdAndDelete(id).exec();
     return 'تم حذف الفصل بنجاح';
   }
+
+  async addTeacherToClassroom(id: string, { teacher }: { teacher: string }) {
+    return this.classroomModel.findByIdAndUpdate(id, { $push: { teachers: new Types.ObjectId(teacher) } }, { new: true }).exec();
+  }
+
+  async addStudentToClassroom(id: string, { student }: { student: string }) {
+    return this.classroomModel.findByIdAndUpdate(id, { $push: { students: new Types.ObjectId(student) } }, { new: true }).exec();
+  }
+
+  async removeTeacherFromClassroom(id: string, { teacher }: { teacher: string }) {
+    return this.classroomModel.findByIdAndUpdate(id, { $pull: { teachers: new Types.ObjectId(teacher) } }, { new: true }).exec();
+  }
+
+  async removeStudentFromClassroom(id: string, { student }: { student: string }) {
+    return this.classroomModel.findByIdAndUpdate(id, { $pull: { students: new Types.ObjectId(student) } }, { new: true }).exec();
+  }
 }

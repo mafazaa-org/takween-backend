@@ -38,7 +38,7 @@ export class StudentService {
       throw new NotFoundException(`الطالب بالمعرف ${id} غير موجود`);
     }
 
-    // In a real implementation, verify that the student is associated with 
+    // In a real implementation, verify that the student is associated with
     // activities/classes owned by the entity owner
     return student;
   }
@@ -49,7 +49,7 @@ export class StudentService {
       throw new NotFoundException(`الطالب بالمعرف ${id} غير موجود`);
     }
 
-    // In a real implementation, verify that the student is associated with 
+    // In a real implementation, verify that the student is associated with
     // activities/classes owned by the entity owner
     return this.studentModel.findByIdAndUpdate(id, data, { new: true }).exec();
   }
@@ -60,7 +60,7 @@ export class StudentService {
       throw new NotFoundException(`الطالب بالمعرف ${id} غير موجود`);
     }
 
-    // In a real implementation, verify that the student is associated with 
+    // In a real implementation, verify that the student is associated with
     // activities/classes owned by the entity owner
     await this.studentModel.findByIdAndDelete(id).exec();
     return 'تم حذف الطالب بنجاح';
@@ -77,7 +77,7 @@ export class StudentService {
     const activity = await this.activityModel.findById(activityId)
       .populate<{ entity: EntityDocument }>('entity')
       .exec();
-      
+
     if (!activity) {
       throw new NotFoundException(`النشاط بالمعرف ${activityId} غير موجود`);
     }

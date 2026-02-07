@@ -18,6 +18,7 @@ import { EvaluationModule } from './evaluation/evaluation.module';
 import { HomeworkModule } from './homework/homework.module';
 import { ContentModule } from './content/content.module';
 import { MessageModule } from './message/message.module';
+import { ParentModule } from './parent/parent.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { MessageModule } from './message/message.module';
     HomeworkModule,
     ContentModule,
     MessageModule,
+    ParentModule,
   ],
   providers: [LoggerMiddleware],
 })
