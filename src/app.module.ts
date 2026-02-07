@@ -9,6 +9,15 @@ import { TokenModule } from './token/token.module';
 import { UserModule } from './user/user.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { SittingModule } from './sitting/sitting.module';
+import { TeacherModule } from './teacher/teacher.module';
+import { MemberModule } from './member/member.module';
+import { AttendanceModule } from './attendance/attendance.module';
+import { ScheduleModule } from './schedule/schedule.module';
+import { ReportModule } from './report/report.module';
+import { EvaluationModule } from './evaluation/evaluation.module';
+import { HomeworkModule } from './homework/homework.module';
+import { ContentModule } from './content/content.module';
+import { MessageModule } from './message/message.module';
 
 @Module({
   imports: [
@@ -26,10 +35,19 @@ import { SittingModule } from './sitting/sitting.module';
     EntityModule,
     ActivityModule,
     ClassroomModule,
-    StudentModule,  
+    StudentModule,
     TokenModule,
     UserModule,
     SittingModule,
+    TeacherModule,
+    MemberModule,
+    AttendanceModule,
+    ScheduleModule,
+    ReportModule,
+    EvaluationModule,
+    HomeworkModule,
+    ContentModule,
+    MessageModule,
   ],
   providers: [LoggerMiddleware],
 })

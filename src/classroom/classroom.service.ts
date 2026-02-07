@@ -13,10 +13,14 @@ export class ClassroomService {
     private activityModel: Model<ActivityDocument>,
   ) {}
 
-  async createClassroom({ name, activity }: { name: string; activity: string; }) {
+  async createClassroom({ name, activity, level }: { name: string; activity: string; level?: string; }) {
     const activityDoc = await this.activityModel.findById(activity).exec();
     if (!activityDoc) throw new NotFoundException(`النشاط بالمعرف ${activity} غير موجود`);
-    return new this.classroomModel({ name, activity: new Types.ObjectId(activity) }).save();
+    return new this.classroomModel({ 
+      name, 
+      activity: new Types.ObjectId(activity), 
+      level: level || '' // Default to empty string if not provided
+    }).save();
   } 
 
   async getClassrooms(activity?: string) {

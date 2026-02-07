@@ -6,6 +6,7 @@ import {
   Put,
   Delete,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ClassroomService } from './classroom.service';
 import { CreateClassroomDto } from './dto/create-classroom.dto';
@@ -16,8 +17,8 @@ export class ClassroomController {
   constructor(private readonly classroomService: ClassroomService) {}
 
   @Get()
-  getClassrooms() {
-    return this.classroomService.getClassrooms();
+  getClassrooms(@Query('activityId') activityId?: string) {
+    return this.classroomService.getClassrooms(activityId);
   }
 
   @Post()

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsMongoId, IsOptional, IsObject } from 'class-validator';
+import { IsNotEmpty, IsString, IsMongoId, IsOptional } from 'class-validator';
 
 export class CreateClassroomDto {
   @IsString({ message: 'الاسم يجب أن يكون نص' })
@@ -8,5 +8,9 @@ export class CreateClassroomDto {
   @IsMongoId({ message: 'معرف النشاط غير صالح' })
   @IsNotEmpty({ message: 'النشاط مطلوب' })
   activity: string;
+
+  @IsOptional()
+  @IsString({ message: 'المستوى يجب أن يكون نص' })
+  level?: string;
 }
 

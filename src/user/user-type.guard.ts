@@ -10,7 +10,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './user.schema';
 
-export const UserTypeGuard = (...types: ('admin' | 'teacher' | 'parent')[]): Type<CanActivate> => {
+export const UserTypeGuard = (...types: ('sheikh' | 'admin' | 'teacher' | 'student' | 'member')[]): Type<CanActivate> => {
     @Injectable()
     class UserTypeGuardMixin implements CanActivate {
         constructor(

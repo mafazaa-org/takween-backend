@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type UserDocument = User & Document;
 
@@ -20,8 +20,14 @@ export class User {
   })
     phone: string;
     
-    @Prop({enum: ["admin", "teacher", "parent"], required: [true, 'النوع مطلوب']})
-    type: "admin" | "teacher" | "parent"
+    @Prop({enum: ["sheikh", "admin", "teacher", "student", "member"], required: [true, 'النوع مطلوب']})
+    type: "sheikh" | "admin" | "teacher" | "student" | "member"
+
+    @Prop({
+        type: [{ type: Types.ObjectId, ref: 'Entity' }],
+        default: [],
+    })
+    entities: Types.ObjectId[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
